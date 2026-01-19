@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
@@ -14,43 +15,34 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      uses: actions/checkout@v6
         
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: "auto"
+        restore-cache: "true"
+        save-cache: "true"
+      
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller loguru
+        uv sync
+        
+    - name: Download JetBrains Mono font
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip" -OutFile "JetBrainsMono.zip"
+        Expand-Archive -Path JetBrainsMono.zip -DestinationPath JetBrainsMono -Force
+        New-Item -ItemType Directory -Force -Path fonts
+        Copy-Item "JetBrainsMono\fonts\ttf\JetBrainsMono-Bold.ttf" "fonts\"
+        Remove-Item JetBrainsMono.zip
+        Remove-Item JetBrainsMono -Recurse
         
     - name: Build executable
       run: |
         .\build.bat
         
-    - name: Get tag name
-      id: tag
-      run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      shell: bash
-      
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        name: Release ${{ steps.tag.outputs.TAG_NAME }}
-        body: |
-          ## What's New
-          
-          See the commits since the last release for detailed changes.
-          
-          ## Download
-          Download `MSFS-SimRate-Monitor.exe` below and run it alongside MSFS.
-          
-          ## Features
-          - Shows current sim rate in a draggable overlay
-          - Lightweight (~20MB memory usage)
-          - No mods or plugins required
+        generate_release_notes: true
         files: ./dist/MSFS-SimRate-Monitor.exe
-        draft: false
-        prerelease: false
