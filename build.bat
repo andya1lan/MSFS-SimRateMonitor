@@ -16,9 +16,11 @@ uv run pyinstaller --noconfirm ^
     --icon "mini_gui_icon.ico" ^
     --add-data "mini_gui_icon.ico;." ^
     --add-data "SimConnect;SimConnect" ^
+    --add-binary "SimConnect\SimConnect.dll;SimConnect" ^
     --add-data "fonts;fonts" ^
     --hidden-import "winshell" ^
     --hidden-import "win32com.client" ^
+    --hidden-import "SimConnect" ^
     mini_gui.py
 
 echo.

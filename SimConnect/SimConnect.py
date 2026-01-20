@@ -6,9 +6,16 @@ from .Enum import *
 from .Constants import *
 from .Attributes import *
 import os
+import sys
 import threading
 
-_library_path = os.path.splitext(os.path.abspath(__file__))[0] + '.dll'
+# Handle PyInstaller frozen executable
+if getattr(sys, 'frozen', False):
+    # In frozen app, DLL is in _MEIPASS/SimConnect/
+    _library_path = os.path.join(sys._MEIPASS, 'SimConnect', 'SimConnect.dll')
+else:
+    # In development, DLL is next to this file
+    _library_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'SimConnect.dll')
 
 LOGGER = logging.getLogger(__name__)
 
